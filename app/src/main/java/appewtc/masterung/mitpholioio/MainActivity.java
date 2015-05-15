@@ -1,18 +1,74 @@
 package appewtc.masterung.mitpholioio;
 
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
+import android.widget.ToggleButton;
+
+import ioio.lib.api.DigitalOutput;
+import ioio.lib.api.exception.ConnectionLostException;
+import ioio.lib.util.BaseIOIOLooper;
+import ioio.lib.util.IOIOLooper;
+import ioio.lib.util.android.IOIOActivity;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends IOIOActivity{
+
+    private ToggleButton myToggleButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        myToggleButton = (ToggleButton) findViewById(R.id.toggleButton);
+
+    }   // onCreate
+
+
+    //Class Looper
+    class Looper extends BaseIOIOLooper {
+
+        private DigitalOutput myOutput;
+
+        @Override
+        protected void setup() throws ConnectionLostException, InterruptedException {
+           // super.setup();
+
+            myOutput = ioio_.openDigitalOutput(0, false);
+
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    Toast.makeText(MainActivity.this, "Connected OK", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+        }
+
+        @Override
+        public void loop() throws ConnectionLostException, InterruptedException {
+           // super.loop();
+
+            myOutput.write(!myToggleButton.isChecked());
+
+            try {
+                Thread.sleep(100);
+            } catch (Exception e) {
+
+            }
+
+
+        }
+    }   // Looper Class
+
+    protected IOIOLooper createIOIOLooper() {
+
+        return new Looper();
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -35,4 +91,4 @@ public class MainActivity extends ActionBarActivity {
 
         return super.onOptionsItemSelected(item);
     }
-}
+}   // Main Class
